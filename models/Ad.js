@@ -25,13 +25,13 @@ const adSchema = new mongoose.Schema({
         required: [true, 'Category is required'],
         enum: ['cars', 'realty', 'electronics', 'jobs', 'services', 'other']
     },
-    owner: {
+    createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
     }
 }, {
-    timestamps: true
+    timestamps: true 
 });
 
 module.exports = mongoose.model('Ad', adSchema);
