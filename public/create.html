@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Створити оголошення</title>
+</head>
+<body>
+    <h1>Нове оголошення</h1>
+    <form id="createAdForm">
+        <input type="text" id="title" placeholder="Назва" required><br><br>
+        <textarea id="description" placeholder="Опис" required></textarea><br><br>
+        <input type="number" id="price" placeholder="Ціна" required><br><br>
+        <input type="text" id="location" placeholder="Місто/Локація" required><br><br>
+        <select id="category">
+            <option value="electronics">Електроніка</option>
+            <option value="cars">Авто</option>
+            <option value="realty">Нерухомість</option>
+            <option value="other">Інше</option>
+        </select><br><br>
+        <button type="submit">Опублікувати</button>
+    </form>
+    <p id="message" style="color: red;"></p>
+    <a href="/index.html">Назад до списку</a>
+
+    <script>
+        if (!localStorage.getItem('token')) {
+            window.location.href = '/login.html';
+        }
+
+        document.getElementById('createAdForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('token');
+            
+            const body = {
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                price: Number(document.getElementById('price').value),
+                location: document.getElementById('location').value,
+                category: document.getElementById('category').value
+            };
+
+            const response = await fetch('/api/ads', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(body)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                document.getElementById('message').textContent = data.message;
+                return;
+            }
+
+            alert('Оголошення додано!');
+            window.location.href = '/index.html';
+        });
+    </script>
+</body>
+</html>

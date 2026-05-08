@@ -9,6 +9,7 @@ const AppError = require('./utils/AppError');
 
 const app = express();
 app.use(express.json());
+app.use(express.static('public'));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/ads', adRoutes);  
