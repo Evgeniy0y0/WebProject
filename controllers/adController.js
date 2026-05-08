@@ -1,83 +1,44 @@
-const Ad = require('../models/Ad');
-const AppError = require('../utils/AppError');
+const catchAsync = require('../utils/catchAsync');
+const adService = require('../services/adService');
 
-exports.getAllAds = async (req, res, next) => {
-    try {
-        const ads = await Ad.find().populate('createdBy', 'name email');
-        res.status(200).json({
-            success: true,
-            count: ads.length,
-            data: ads
-        });
-    } catch (err) {
-        next(err);
-    }
-};
+exports.getAllAds = catchAsync(async (req, res) => {
+    const result = await adService.getAllAds(req.query);
+    res.status(200).json({
+        success: true,
+        count: result.data.length,
+        pagination: result.pagination,
+        data: result.data
+    });
+});
 
-exports.getAd = async (req, res, next) => {
-    try {
-        const ad = await Ad.findById(req.params.id).populate('createdBy', 'name email');
-        if (!ad) {
-            return next(new AppError('Ad not found', 404));
-        }
-        res.status(200).json({ success: true, data: ad });
-    } catch (err) {
-        if (err.name === 'CastError') {
-            return next(new AppError('Invalid ad ID format', 404));
-        }
-        next(err);
-    }
-};
+exports.getAd = catchAsync(async (req, res) => {
+    const ad = await adService.getAdById(req.params.id);
+    res.status(200).json({
+        success: true,
+        data: ad
+    });
+});
 
-exports.createAd = async (req, res, next) => {
-    try {
-        const ad = await Ad.create({
-            title: req.body.title,
-            description: req.body.description,
-            price: req.body.price,
-            location: req.body.location,
-            category: req.body.category,
-            createdBy: req.user._id  
-        });
-        res.status(201).json({
-            success: true,
-            data: ad
-        });
-    } catch (err) {
-        next(err);
-    }
-};
+exports.createAd = catchAsync(async (req, res) => {
+    const ad = await adService.createAd(req.body, req.user._id);
+    res.status(201).json({
+        success: true,
+        data: ad
+    });
+});
 
-exports.updateAd = async (req, res, next) => {
-    try {
-        const ad = await Ad.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true, runValidators: true }
-        );
-        if (!ad) {
-            return next(new AppError('Ad not found', 404));
-        }
-        res.status(200).json({
-            success: true,
-            data: ad
-        });
-    } catch (err) {
-        next(err);
-    }
-};
+exports.updateAd = catchAsync(async (req, res) => {
+    const ad = await adService.updateAd(req.params.id, req.body, req.user);
+    res.status(200).json({
+        success: true,
+        data: ad
+    });
+});
 
-exports.deleteAd = async (req, res, next) => {
-    try {
-        const ad = await Ad.findByIdAndDelete(req.params.id);
-        if (!ad) {
-            return next(new AppError('Ad not found', 404));
-        }
-        res.status(200).json({
-            success: true,
-            message: 'Ad deleted successfully'
-        });
-    } catch (err) {
-        next(err);
-    }
-};
+exports.deleteAd = catchAsync(async (req, res) => {
+    await adService.deleteAd(req.params.id);
+    res.status(200).json({
+        success: true,
+        message: 'Ad deleted successfully'
+    });
+});
