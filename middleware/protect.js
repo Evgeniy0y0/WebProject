@@ -4,12 +4,20 @@ const AppError = require('../utils/AppError');
 const catchAsync = require('../utils/catchAsync');
 
 const protect = catchAsync(async (req, res, next) => {
+    let token = req.cookies.token; 
+
+    if (!token && req.headers.authorization?.startsWith('Bearer ')) {
+        token = req.headers.authorization.split(' ')[1];
+    }
+
+    if (!token) {
+        return next(new AppError('Ви не авторизовані', 401));
+    }
+
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return next(new AppError('Access denied. No token provided', 401));
     }
-
-    const token = authHeader.split(' ')[1];
 
     let decoded;
     try {

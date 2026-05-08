@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>AdBoard - Головна</title>
+</head>
+<body>
+    <h1>Останні оголошення</h1>
+    <nav>
+        <a href="/login.html">Увійти</a> |
+        <a href="/register.html">Реєстрація</a> |
+        <a href="/create.html">Подати оголошення</a> |
+        <button id="logoutBtn">Вийти</button>
+    </nav>
+    <hr>
+    <div id="adsList">Завантаження...</div>
+
+    <script>
+        const API_URL = 'http://localhost:3000';
+        
+        async function loadAds() {
+            try {
+                const response = await fetch(`${API_URL}/api/ads`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        document.getElementById('adsList').innerHTML = 'Будь ласка, <a href="/login.html">увійдіть</a>, щоб переглянути оголошення.';
+                    } else {
+                        document.getElementById('adsList').innerHTML = 'Помилка завантаження оголошень.';
+                    }
+                    return;
+                }
+
+                const data = await response.json();
+                const container = document.getElementById('adsList');
+
+                const ads = data.data || data;
+
+                if (!ads || ads.length === 0) {
+                    container.innerHTML = 'Оголошень поки немає.';
+                    return;
+                }
+
+                container.innerHTML = ads.map(ad => `
+                    <div style="border: 1px solid #ccc; margin-bottom: 10px; padding: 10px;">
+                        <h3>${ad.title} — ${ad.price} грн</h3>
+                        <p>Локація: ${ad.location} | Категорія: ${ad.category}</p>
+                        <p>${ad.description}</p>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Помилка:', error);
+                document.getElementById('adsList').innerHTML = 'Не вдалося з’єднатися з сервером.';
+            }
+        }
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${API_URL}/api/auth/logout`, { 
+                    method: 'POST', 
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    console.log('Вихід успішний');
+                    window.location.href = '/login.html';
+                }
+            } catch (err) {
+                console.error('Помилка при виході:', err);
+            }
+        });
+
+        loadAds();
+    </script>
+</body>
+</html>

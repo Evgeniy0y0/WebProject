@@ -22,42 +22,42 @@
     <p id="message" style="color: red;"></p>
     <a href="/index.html">Назад до списку</a>
 
-    <script>
-        if (!localStorage.getItem('token')) {
-            window.location.href = '/login.html';
-        }
+<script>
+    const API_URL = 'http://localhost:3000';
 
-        document.getElementById('createAdForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const token = localStorage.getItem('token');
-            
-            const body = {
-                title: document.getElementById('title').value,
-                description: document.getElementById('description').value,
-                price: Number(document.getElementById('price').value),
-                location: document.getElementById('location').value,
-                category: document.getElementById('category').value
-            };
+    document.getElementById('createAdForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-            const response = await fetch('/api/ads', {
+        const body = {
+            title: document.getElementById('title').value,
+            price: document.getElementById('price').value,
+            description: document.getElementById('description').value,
+            location: document.getElementById('location').value,
+            category: document.getElementById('category').value
+        };
+
+        try {
+            const response = await fetch(`${API_URL}/api/ads`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify(body)
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-                document.getElementById('message').textContent = data.message;
+                alert(data.message || 'Помилка при створенні');
                 return;
             }
 
-            alert('Оголошення додано!');
+            alert('Оголошення успішно створено!');
             window.location.href = '/index.html';
-        });
-    </script>
+        } catch (error) {
+            console.error('Помилка:', error);
+            alert('Не вдалося з’єднатися з сервером');
+        }
+    });
+</script>
 </body>
 </html>
