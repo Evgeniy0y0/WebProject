@@ -11,7 +11,7 @@ const generateToken = (id, role) => {
 
 const cookieOptions = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: false,
     sameSite: 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000
 };
@@ -43,6 +43,8 @@ exports.login = catchAsync(async (req, res) => {
 exports.logout = catchAsync(async (req, res) => {
     res.cookie('token', '', {
     httpOnly: true,
+    secure: false,
+    sameSite: 'lax',
     expires: new Date(0),
     path: '/'
 });

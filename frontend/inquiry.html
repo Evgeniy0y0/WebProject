@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Inquiry — AdBoard</title>
+    <style>
+        body { font-family: sans-serif; max-width: 500px; margin: 40px auto; padding: 20px; }
+        .field { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 6px; font-weight: bold; }
+        textarea { width: 100%; padding: 8px; box-sizing: border-box; resize: vertical; border: 1px solid #ccc; }
+        textarea.error { border: 2px solid #ff4d4d; background-color: #fff3f3; }
+        .field-error { color: #ff4d4d; font-size: 12px; }
+        #submitBtn { padding: 10px 20px; background: #2ecc71; color: white; border: none; cursor: pointer; font-size: 16px; }
+        #submitBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+        #serverErrors p { color: #ff4d4d; font-weight: bold; }
+        .back-link { display: inline-block; margin-top: 15px; color: #3498db; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <h1>Send Inquiry for Advertisement</h1>
+    <div id="serverErrors"></div>
+
+    <form id="inquiryForm">
+        <div class="field">
+            <label for="message">Your Message to Seller:</label>
+            <textarea id="message" rows="5" placeholder="Write at least 10 characters..." required></textarea>
+            <span class="field-error" id="messageError"></span>
+        </div>
+        <button type="submit" id="submitBtn">Send Inquiry</button>
+    </form>
+
+    <a href="index.html" class="back-link">← Back to Advertisements</a>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:3000';
+        
+        const params = new URLSearchParams(window.location.search);
+        const adId = params.get('adId');
+
+        if (!adId) {
+            window.location.href = 'index.html';
+        }
+
+        const messageInput = document.getElementById('message');
+        const errorSpan = document.getElementById('messageError');
+
+        function validateMessage() {
+            if (messageInput.value.trim().length < 10) {
+                messageInput.classList.add('error');
+                errorSpan.textContent = 'Inquiry message must be at least 10 characters long';
+                return false;
+            }
+            messageInput.classList.remove('error');
+            errorSpan.textContent = '';
+            return true;
+        }
+
+        messageInput.addEventListener('input', validateMessage);
+
+        document.getElementById('inquiryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!validateMessage()) return;
+
+            try {
+                const response = await fetch(`${API_URL}/api/ads/${adId}/inquiries`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: messageInput.value.trim()
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    const container = document.getElementById('serverErrors');
+                    const msgs = data.errors || [data.message];
+                    container.innerHTML = msgs.map(m => `<p>• ${m}</p>`).join('');
+                    return;
+                }
+
+                alert('Inquiry sent successfully!');
+                window.location.href = 'index.html';
+            } catch (err) {
+                document.getElementById('serverErrors').innerHTML = '<p>Error: Could not connect to server.</p>';
+            }
+        });
+    </script>
+</body>
+</html>

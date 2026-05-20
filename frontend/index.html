@@ -1,22 +1,30 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AdBoard - Головна</title>
+    <title>AdBoard - Home</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }
+        nav { margin-bottom: 20px; }
+        .ad-card { border: 1px solid #ccc; margin-bottom: 15px; padding: 15px; border-radius: 4px; }
+        .ad-card h3 { margin-top: 0; color: #2c3e50; }
+        .inquiry-btn { display: inline-block; margin-top: 10px; padding: 6px 12px; background: #2ecc71; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; }
+        .inquiry-btn:hover { background: #27ae60; }
+    </style>
 </head>
 <body>
-    <h1>Останні оголошення</h1>
+    <h1>Latest Advertisements</h1>
     <nav>
-        <a href="/login.html">Увійти</a> |
-        <a href="/register.html">Реєстрація</a> |
-        <a href="/create.html">Подати оголошення</a> |
-        <button id="logoutBtn">Вийти</button>
+        <a href="login.html">Login</a> |
+        <a href="register.html">Register</a> |
+        <a href="create.html">Create Advertisement</a> |
+        <button id="logoutBtn">Logout</button>
     </nav>
     <hr>
-    <div id="adsList">Завантаження...</div>
+    <div id="adsList">Loading...</div>
 
     <script>
-        const API_URL = 'http://localhost:3000';
+        const API_URL = 'http://127.0.0.1:3000';
         
         async function loadAds() {
             try {
@@ -27,33 +35,33 @@
 
                 if (!response.ok) {
                     if (response.status === 401) {
-                        document.getElementById('adsList').innerHTML = 'Будь ласка, <a href="/login.html">увійдіть</a>, щоб переглянути оголошення.';
+                        document.getElementById('adsList').innerHTML = 'Please <a href="login.html">login</a> to view advertisements.';
                     } else {
-                        document.getElementById('adsList').innerHTML = 'Помилка завантаження оголошень.';
+                        document.getElementById('adsList').innerHTML = 'Error loading advertisements.';
                     }
                     return;
                 }
 
                 const data = await response.json();
                 const container = document.getElementById('adsList');
-
                 const ads = data.data || data;
 
                 if (!ads || ads.length === 0) {
-                    container.innerHTML = 'Оголошень поки немає.';
+                    container.innerHTML = 'No advertisements available yet.';
                     return;
                 }
 
                 container.innerHTML = ads.map(ad => `
-                    <div style="border: 1px solid #ccc; margin-bottom: 10px; padding: 10px;">
-                        <h3>${ad.title} — ${ad.price} грн</h3>
-                        <p>Локація: ${ad.location} | Категорія: ${ad.category}</p>
+                    <div class="ad-card">
+                        <h3>${ad.title} — $${ad.price}</h3>
+                        <p><strong>Location:</strong> ${ad.location} | <strong>Category:</strong> ${ad.category}</p>
                         <p>${ad.description}</p>
+                        <a href="inquiry.html?adId=${ad._id}" class="inquiry-btn">Send Inquiry to Seller</a>
                     </div>
                 `).join('');
             } catch (error) {
-                console.error('Помилка:', error);
-                document.getElementById('adsList').innerHTML = 'Не вдалося з’єднатися з сервером.';
+                console.error('Error:', error);
+                document.getElementById('adsList').innerHTML = 'Could not connect to server.';
             }
         }
 
@@ -65,11 +73,10 @@
                 });
 
                 if (response.ok) {
-                    console.log('Вихід успішний');
-                    window.location.href = '/login.html';
+                    window.location.href = 'login.html';
                 }
             } catch (err) {
-                console.error('Помилка при виході:', err);
+                console.error('Logout error:', err);
             }
         });
 
